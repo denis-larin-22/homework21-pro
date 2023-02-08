@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        class Note {
+            status = false;
+
+            constructor(title, text) {
+                this.title = title;
+                this.text = text;
+            }
+
+            editTitle(title, agreement) {
+                if (agreement) this.title = title;
+            }
+
+            editText(text, agreement) {
+                if (agreement) this.text = text;
+            }
+
+            markAsComplete() {
+                this.status = true;
+            }
+
+        }
+
+
+        class List {
+            notesList = []
+
+            constructor(name) {
+                this.listName = name
+            }
+
+            addNote(title, text) {
+                if (List.checkUniq(title, this.notesList)) {
+                    this.notesList.push(new Note(title, text))
+                };
+
+                InStorage.saveToStorage(this.listName, this.notesList);
+            }
+
+            editNoteTitle(index, title, agreement) {
+                let result = this.notesList.at(index).editTitle(title, agreement);
+
+                InStorage.saveToStorage(this.listName, this.notesList);
+            }
+
+            editNoteText(index, text, agreement) {
+                this.notesList.at(index).editText(text, agreement);
+
+                InStorage.saveToStorage(this.listName, this.notesList);
+            }
+
+            setCompleteNote(index) {
+                this.notesList.at(index).markAsComplete();
+
+                InStorage.saveToStorage(this.listName, this.notesList);
+            }
+
+            getCountNotes() {
+                return this.notesList.reduce((info, note) => {
+                    if (!info.total) info.total = this.notesList.length;
+
+                    if (!info[note.status]) info[note.status] = 0;
+
+                    info[note.status]++;
+
+                    return info;
+                }, {});
+            }
+
+            static checkUniq(title, array) {
+                return !array.find(item => item.title === title);
+            }
+
+            //localStorage
+            showList(item, callback) {
+                InStorage.getFromStorage(item, callback);
+            }
+        }
+
+
+        class InStorage {
+            static saveToStorage(name, item) {
+                localStorage.setItem(name, JSON.stringify(item, null, 1));
+            }
+
+            static getFromStorage(item, callback) {
+                if (localStorage.length) {
+                    callback(JSON.parse(localStorage.getItem(item)));
+                } else {
+                    throw new Error('The storage is empty!')
+                }
+            }
+        }
+
+        function showList() {
+            if (localStorage.length) {
+                let values = Object.values(localStorage);
+
+                values.forEach((item, index) => {
+                    console.log(localStorage.key(index), (JSON.parse(item)));
+                })
+            } else {
+                throw new Error('The storage is empty!')
+            }
+        }
+
+        ////////////////////////////////////////////
+        // const list1 = new List('Layout');
+        // list1.addNote('html', 'tags');
+        // list1.addNote('css', 'styles');
+        // list1.setCompleteNote(0);
+        // list1.setCompleteNote(1);
+        // list1.editNoteText(1, 'styles, preprocessor', true);
+
+        // // list1.showList('Layout', console.log);
+
+
+        // const list2 = new List('Developing');
+        // list2.addNote('JavaScript', 'language basics');
+        // list2.addNote('REACT', 'framework');
+        // list2.addNote('TypeScript', 'extended version of the JavaScript language,');
+        // list2.setCompleteNote(0, true);
+        // list2.editNoteText(0, 'language core', true);
+
+        // list2.showList('Developing', console.log);
+
+        ////////////////////////////////////////////
+
+        showList()
+    </script>
+</body>
+
+</html>
